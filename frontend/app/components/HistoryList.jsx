@@ -1,6 +1,7 @@
 "use client";
 
 import Pagination from "./Pagination";
+import { useState } from "react";
 
 export default function HistoryList({
   items,
@@ -12,7 +13,28 @@ export default function HistoryList({
   onToggleFavorite,
   selectedId
 }) {
+
+  
+  
+  const [languageFilter, setLanguageFilter] = useState("all");
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  
+  const filteredItems = (items || []).filter((item) => {
+    const lang = (item.language || "").toLowerCase();
+    
+    if (languageFilter !== "all" && lang !== languageFilter) {
+      return false;
+    }
+    
+    if (favoritesOnly && !item.isFavorite) {
+      return false;
+    }
+    
+    return true;
+  });
+  
   if (!isLoading && (!items || items.length === 0)) {
+
     return (
       <div className="flex-1 flex items-center justify-center py-8">
         <div className="text-center max-w-xs">
@@ -44,8 +66,47 @@ export default function HistoryList({
 
   return (
     <div className="flex-1 flex flex-col gap-4">
+
+
+      {!isLoading && filteredItems.length === 0 && (
+  <div className="text-[11px] text-slate-500 py-4 text-center border border-dashed border-slate-800 rounded-lg">
+    No history items match the current filters.
+  </div>
+)}
+
+<div className="flex flex-col gap-2 text-[11px] text-slate-400">
+  <div className="flex items-center justify-between gap-2">
+    <span className="uppercase tracking-wide font-semibold text-slate-500">
+      History Filters
+    </span>
+
+    <button
+      type="button"
+      onClick={() => setFavoritesOnly((prev) => !prev)}
+      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] transition-colors ${
+        favoritesOnly
+          ? "border-yellow-400/60 bg-yellow-500/15 text-yellow-300"
+          : "border-slate-700 bg-slate-900/80 text-slate-300 hover:bg-slate-800"
+      }`}
+    >
+      <span className="text-xs">{favoritesOnly ? "★" : "☆"}</span>
+      <span>Favourites</span>
+    </button>
+  </div>
+
+  <div className="flex flex-wrap gap-1.5">
+    <button onClick={() => setLanguageFilter("all")} className="filter-pill border border-sky-500 rounded-xl p-1 hover:bg-blue-300">All</button>
+    <button onClick={() => setLanguageFilter("python")} className="filter-pill border border-sky-500 rounded-xl p-1 hover:bg-blue-300">Python</button>
+    <button onClick={() => setLanguageFilter("javascript")} className="filter-pill border border-sky-500 rounded-xl p-1 hover:bg-blue-300">JavaScript</button>
+    <button onClick={() => setLanguageFilter("typescript")} className="filter-pill border border-sky-500 rounded-xl p-1 hover:bg-blue-300">TypeScript</button>
+    <button onClick={() => setLanguageFilter("cpp")} className="filter-pill border border-sky-500 rounded-xl p-1 hover:bg-blue-300">C++</button>
+  </div>
+</div>
+
+
+
       <div className="flex flex-col gap-3 max-h-[420px] overflow-auto pr-1 custom-scrollbar">
-        {items.map((item) => {
+        {filteredItems.map((item) => {
           const isSelected = selectedId === item.id;
           const isFavorite = !!item.isFavorite;
           return (
